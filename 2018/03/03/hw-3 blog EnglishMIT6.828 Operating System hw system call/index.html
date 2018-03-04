@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Bravado">
 <meta property="og:description" content="MIT6.828 Operating System hw system callIntroductionUCI CS143A and CS238P, Operating System, are courses refered to MIT6.828.This homework is to implement a system call, dump, which can dump memory of">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-03-04T02:24:54.000Z">
+<meta property="og:updated_time" content="2018-03-04T02:29:34.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MIT6.828 Operating System hw system call">
 <meta name="twitter:description" content="MIT6.828 Operating System hw system callIntroductionUCI CS143A and CS238P, Operating System, are courses refered to MIT6.828.This homework is to implement a system call, dump, which can dump memory of">
@@ -302,7 +302,7 @@
       
         <h1 id="MIT6-828-Operating-System-hw-system-call"><a href="#MIT6-828-Operating-System-hw-system-call" class="headerlink" title="MIT6.828 Operating System hw system call"></a>MIT6.828 Operating System hw system call</h1><h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>UCI CS143A and CS238P, Operating System, are courses refered to MIT6.828.<br>This homework is to implement a system call, dump, which can dump memory of a process to screen, and use user program to test.<br>Detailed hw requirement:<br><a href="http://www.ics.uci.edu/~aburtsev/238P/hw/hw3-dump-pid-syscall.html" target="_blank" rel="noopener">hw3 system call</a> </p>
 <h2 id="basic-settings"><a href="#basic-settings" class="headerlink" title="basic settings"></a>basic settings</h2><ul>
-<li>to add a system call we need to modify a series of files in xv6, following:  <a href="http://recolog.blogspot.com/2016/03/a-new-system-call-to-xv6.html/" target="_blank" rel="noopener">add sytem call to xv6</a> </li>
+<li>to add a system call we need to modify a series of files in xv6, following:<br><a href="http://recolog.blogspot.com/2016/03/a-new-system-call-to-xv6.html/" target="_blank" rel="noopener">add sytem call to xv6</a></li>
 <li>add a user program and modify Makefile:<br><a href="http://recolog.blogspot.com/2016/03/adding-user-program-to-xv6.html" target="_blank" rel="noopener">add user program to xv6</a></li>
 </ul>
 <hr>
@@ -316,11 +316,26 @@
 <h3 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h3><ul>
 <li>for loop ptable, use pid to find related pgdir(see struct proc in proc.h) -&gt; get pgdir</li>
 <li>call walkpgdir() and pass pgdir to it -&gt; get pte</li>
-<li><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- turn pa to va, call memmove() and pass va to it -&gt; move memory to buffer</span><br><span class="line"></span><br><span class="line">### walkpgdir(pgdir, va, a)</span><br><span class="line">- pgdir: pointer to page directory </span><br><span class="line">- va: virtual address will be round to the beginning of one page</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line">test program</span><br><span class="line">## dump.c</span><br><span class="line">### Implementation</span><br><span class="line">- for loop: call dump(), pass in addr(increase PGSIZE each time), until dump() return -1</span><br><span class="line">- print content in buffer</span><br><span class="line"></span><br><span class="line">### Some Details</span><br><span class="line">1.</span><br></pre></td></tr></table></figure>
-</li>
+<li>pa = PTE_ADDR(*pte) -&gt; get physical address</li>
+<li>turn pa to va, call memmove() and pass va to it -&gt; move memory to buffer</li>
 </ul>
-<p>char<em> buffer = malloc(PGSIE);<br>//need cast to int</em><br>printf(2, <em>(int</em>)(buffer + i*4));<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2. use printf in xv6</span><br><span class="line">need another argument</span><br></pre></td></tr></table></figure></p>
-<p>printf(2, “%x”, <em>(int</em>)buffer + i*4)<br><code>`</code></p>
+<h3 id="walkpgdir-pgdir-va-a"><a href="#walkpgdir-pgdir-va-a" class="headerlink" title="walkpgdir(pgdir, va, a)"></a>walkpgdir(pgdir, va, a)</h3><ul>
+<li>pgdir: pointer to page directory </li>
+<li>va: virtual address will be round to the beginning of one page</li>
+</ul>
+<hr>
+<p>test program</p>
+<h2 id="dump-c"><a href="#dump-c" class="headerlink" title="dump.c"></a>dump.c</h2><h3 id="Implementation-1"><a href="#Implementation-1" class="headerlink" title="Implementation"></a>Implementation</h3><ul>
+<li>for loop: call dump(), pass in addr(increase PGSIZE each time), until dump() return -1</li>
+<li>print content in buffer</li>
+</ul>
+<h3 id="Some-Details"><a href="#Some-Details" class="headerlink" title="Some Details"></a>Some Details</h3><ol>
+<li><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">char* buffer = malloc(PGSIE);</span><br><span class="line">//need cast to int*</span><br><span class="line">printf(2, *(int*)(buffer + i*4));</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>use printf in xv6<br>need another argument</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(2, &quot;%x&quot;, *(int*)buffer + i*4)</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
 
       
     </div>
@@ -486,7 +501,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MIT6-828-Operating-System-hw-system-call"><span class="nav-number">1.</span> <span class="nav-text">MIT6.828 Operating System hw system call</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#basic-settings"><span class="nav-number">1.2.</span> <span class="nav-text">basic settings</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#proc-c"><span class="nav-number">1.3.</span> <span class="nav-text">proc.c</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Arguments"><span class="nav-number">1.3.1.</span> <span class="nav-text">Arguments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation"><span class="nav-number">1.3.2.</span> <span class="nav-text">Implementation</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MIT6-828-Operating-System-hw-system-call"><span class="nav-number">1.</span> <span class="nav-text">MIT6.828 Operating System hw system call</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#basic-settings"><span class="nav-number">1.2.</span> <span class="nav-text">basic settings</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#proc-c"><span class="nav-number">1.3.</span> <span class="nav-text">proc.c</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Arguments"><span class="nav-number">1.3.1.</span> <span class="nav-text">Arguments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation"><span class="nav-number">1.3.2.</span> <span class="nav-text">Implementation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#walkpgdir-pgdir-va-a"><span class="nav-number">1.3.3.</span> <span class="nav-text">walkpgdir(pgdir, va, a)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dump-c"><span class="nav-number">1.4.</span> <span class="nav-text">dump.c</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation-1"><span class="nav-number">1.4.1.</span> <span class="nav-text">Implementation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Some-Details"><span class="nav-number">1.4.2.</span> <span class="nav-text">Some Details</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
